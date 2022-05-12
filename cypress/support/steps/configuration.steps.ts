@@ -24,19 +24,27 @@ export const configEnvWithTenderly = ({
   const walletAddress: string = wallet != null ? wallet.address : DEFAULT_TEST_ACCOUNT.address;
   const privateKey: string = wallet != null ? wallet.privateKey : DEFAULT_TEST_ACCOUNT.privateKey;
   before(async () => {
-    await tenderly.init();
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    await setTimeout(() => {}, 3000);
+    if (market == 'fork_proto_optimism_v3') {
+      await tenderly.init();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      await setTimeout(() => {}, 3000);
+      await tenderly.add_balance_rpc(walletAddress);
+      await tenderly.getOptimismTokens();
+    } else {
+      await tenderly.init();
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      await setTimeout(() => {}, 3000);
 
-    await tenderly.add_balance_rpc(walletAddress);
-    if (unpause) {
-      await tenderly.unpauseMarket();
-    }
+      await tenderly.add_balance_rpc(walletAddress);
+      if (unpause) {
+        await tenderly.unpauseMarket();
+      }
 
-    if (tokens) {
-      await Promise.all(
-        tokens.map((token) => tenderly.getERC20Token(walletAddress, token.address))
-      );
+      if (tokens) {
+        await Promise.all(
+          tokens.map((token) => tenderly.getERC20Token(walletAddress, token.address))
+        );
+      }
     }
   });
   before('Open main page', () => {

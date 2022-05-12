@@ -4,6 +4,7 @@ import axios from 'axios';
 import { getDefaultProvider, Contract, utils } from 'ethers';
 import ERC20_ABI from '../../fixtures/erc20_abi.json';
 import POOL_CONFIG_ABI from '../../fixtures/poolConfig.json';
+import { IERC20Detailed } from '@aave/contract-helpers/src/erc20-contract/typechain/IERC20Detailed';
 
 const TENDERLY_KEY = Cypress.env('TENDERLY_KEY');
 const TENDERLY_ACCOUNT = Cypress.env('TENDERLY_ACCOUNT');
@@ -107,6 +108,34 @@ export class TenderlyFork {
       )
     ).data.holders[0].address;
     return res;
+  }
+
+  async getOptimismTokens() {
+    const amount = 1000;
+    const token = '0x4200000000000000000000000000000000000006'; // weth
+    const decimals = await (
+      (await getContract(
+        '@aave/protocol-v2/contracts/dependencies/openzeppelin/contracts/IERC20Detailed.sol:IERC20Detailed',
+        token
+      )) as IERC20Detailed
+    ).decimals();
+    const rawAmount = parseUnits(amount, decimals);
+    const slotValue = abiEncode(['uint'], [rawAmount.toString()]);
+
+    const balanceSlot = await findBalancesSlot(token);
+    let accountSlotLocation = hre.ethers.utils.keccak256(
+      abiEncode(['address', 'uint'], [user, balanceSlot])
+    );
+
+    // remove padding for JSON RPC
+    while (accountSlotLocation.startsWith('0x0'))
+      accountSlotLocation = '0x' + accountSlotLocation.slice(3);
+
+    await hre.network.provider.send('hardhat_setStorageAt', [
+      token,
+      accountSlotLocation,
+      slotValue,
+    ]);
   }
 
   async deleteFork() {

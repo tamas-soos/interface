@@ -69,13 +69,9 @@ const testData = {
 describe('DAI INTEGRATION SPEC, OPTIMISM V3 MARKET', () => {
   const skipTestState = skipState(false);
   configEnvWithTenderlyOptimismFork({ v3: true });
-
-  supply(testData.depositBaseAmount, skipTestState, true);
-  borrow(testData.testCases.borrow, skipTestState, true);
-  supply(testData.testCases.deposit, skipTestState, true);
-  testData.testCases.repay.forEach((repayCase) => {
-    repay(repayCase, skipTestState, false);
+  describe('BlaBla', () => {
+    it('blabla', () => {
+      cy.log('1111');
+    });
   });
-  withdraw(testData.testCases.withdraw, skipTestState, false);
-  dashboardAssetValuesVerification(testData.verifications.finalDashboard, skipTestState);
 });
